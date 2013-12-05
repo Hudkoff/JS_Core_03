@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>To table or not to table - that is the question</title>
+<style>
+	/* general styles */
+	.coolTable {
+		margin: 0 auto;
+	}
+	.coolTable td {
+		padding: 6px;
+		border: 1px solid #ddd;
+		border-radius: 10%;
+	}
+	.coolTable a {
+		display: block;
+		width: 18px;
+		height: 18px;
+		background: #eee;
+		border-radius: 50%;
+	}
+
+	/* dynamic styles */
+	tr.highlight td,
+	td.highlight {
+		background: #f7f9ff;
+		border: 1px solid #99def5;
+	}
+	tr.new td {
+		background: #ffcccc;
+		border: 1px solid #ff0000;
+		-webkit-transition: all 0.5s;
+		transition: all 0.5s;
+
+	}
+
+	tr.highlight td a,
+	td.highlight a{
+		background: #ddeef9;
+	}
+
+	tr.highlight td.highlight a{
+		background: #99def5;
+	}
+
+</style>
+</head>
+<body>
+
+	<script>
+	// var rows = prompt("Rows", 15);
+	// var cols = prompt("Cols", 15);
+	var rows = 15;
+	var cols = 15;
+
+	var body = document.body;
+
+	// creating table
+	var table = document.createElement('table');
+	table.className = "coolTable";
+
+	// creating <tr>
+	var rowTmpl = document.createElement('tr');
+
+	// creating <td><a><td>
+	var cellTmpl = document.createElement('td');
+	var link = document.createElement('a');
+	link.href = "#";
+	cellTmpl.appendChild(link.cloneNode(true));
+
+	// fill <tr>.......<tr> with cells
+	for (var i = 0; i < cols; i++) {
+		rowTmpl.appendChild(cellTmpl.cloneNode(true));	
+	};
+	// fill <table>.......</table> with rows
+	for (var i = 0; i < rows; i++) {
+		table.appendChild(rowTmpl.cloneNode(true));
+	};
+
+	// rendering nice table
+	body.appendChild(table);
+
+	/////////////////////////////////////////////////////////// MAGIC below!
+
+	// lets add events to the whole table
+	table.addEventListener("mouseover", highlight);
+	table.addEventListener("mouseout", removeHighlight);
+	table.addEventListener("click", addRow);
+	table.addEventListener("dblclick", removeCol);
+	// sorry, no time to add IE fixes for events and other... I want to sleep so much...
+
+	// mouseover
+	function highlight(e) {
+		var element = e.target;
+		if (element.nodeName == "A") {									// works for <a> only
+			element.parentNode.parentNode.className = "highlight";		// tr
+			var curIndex = element.parentNode.cellIndex;				// N of current <td>
+			for (var i = 0; i < table.rows.length; i++) {
+				table.rows[i].cells[curIndex].className = "highlight"; 	// for every <tr> add class to <td> with the same index
+			};
+		};
+	};
+
+	// mouseout
+	function removeHighlight(e) {
+		var element =  e.target;
+		if (element.nodeName == "A") {									// works when mouseout out of <a>
+			var elements = table.querySelectorAll(".highlight");		// array of highlighted elements
+			for (var i = 0; i < elements.length; i++) {
+				elements[i].className = "";								// no time to explain - kill all class names!
+			};
+		}
+	};
+
+	// click
+	function addRow(e) {
+		var element = e.target;
+		if (element.nodeName == "A") {
+			e.preventDefault();
+			var curRow = element.parentNode.parentNode; 				// <tr>
+			var newRow = curRow.cloneNode(true);						// clone the whole <tr>
+			//newRow.className = "new"; // not implemented yet
+			table.insertBefore(newRow, curRow.nextSibling);				// inserts newRow before the row that is next for current
+		};
+		// trick to remove double highlight
+		removeHighlight(e);
+		highlight(e);
+
+	};
+
+	// dblclick
+	function removeCol(e) {
+		var element = e.target;
+		if (element.nodeName == "A") {
+			e.preventDefault();
+			var curIndex = element.parentNode.cellIndex;				// N of current <td>
+			for (var i = 0; i < table.rows.length; i++) {
+				var theSameCell = table.rows[i].cells[curIndex];		// all <td> with the same index
+				table.rows[i].removeChild(theSameCell);					// kill kill kill
+			};				
+
+		};
+	};
+
+	</script>
+</body>
+</html>
